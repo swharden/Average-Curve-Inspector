@@ -2,12 +2,13 @@ namespace gainapp;
 
 public partial class Form1 : Form
 {
-    readonly CurveManager CM = new(10);
+    readonly CurveManager CM;
 
     public Form1()
     {
         InitializeComponent();
 
+        CM = new CurveManager((int)numericUpDown1.Maximum);
         tbHorizontal.ValueChanged += (s, e) => UpdateCurves();
         tbVertical.ValueChanged += (s, e) => UpdateCurves();
         numericUpDown1.ValueChanged += (s, e) => UpdateCurves();
