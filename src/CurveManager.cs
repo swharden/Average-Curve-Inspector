@@ -5,40 +5,44 @@ namespace gainapp;
 public class CurveManager
 {
     readonly Random Rand = new();
-    readonly double[] CurveOffsetFractions; // values from -1 to +1
+    readonly double[] HorizontalOffset; // values from -1 to +1
+    readonly double[] VerticalOffset; // values from -1 to +1
+    public readonly double[] Xs = ScottPlot.Generate.Consecutive(100);
 
     public CurveManager(int count)
     {
-        CurveOffsetFractions = new double[count];
+        HorizontalOffset = new double[count];
+        VerticalOffset = new double[count];
         Randomize();
     }
 
     public void Randomize()
     {
-        for (int i = 0; i < CurveOffsetFractions.Length; ++i)
+        for (int i = 0; i < HorizontalOffset.Length; ++i)
         {
-            CurveOffsetFractions[i] = Rand.NextDouble() * 2 - 1;
+            HorizontalOffset[i] = Rand.NextDouble() * 2 - 1;
+            VerticalOffset[i] = Rand.NextDouble() * 2 - 1;
         }
     }
 
-    public double[] GetCurve(int index, double alignment)
+    public double[] GetCurve(int index, double alignmentVariance, double heightVariance)
     {
-        double variance = 1 - alignment;
-
         double[] bell = ScottPlot.DataGen.Ones(40);
         FftSharp.Windows.Blackman window = new();
         window.ApplyInPlace(bell);
 
-        double[] curve = new double[100];
+        double[] curve = new double[Xs.Length];
         int offsetIndex = curve.Length / 2 - bell.Length / 2;
-        offsetIndex += (int)(variance * bell.Length * CurveOffsetFractions[index]);
+        offsetIndex += (int)(alignmentVariance * bell.Length * HorizontalOffset[index]);
+
+        double heightMultiplier = 1 + heightVariance * VerticalOffset[index];
 
         for (int i = 0; i < bell.Length; i++)
         {
             int destIndex = offsetIndex + i;
             if (destIndex >= 0 && destIndex < curve.Length)
             {
-                curve[destIndex] = bell[i];
+                curve[destIndex] = bell[i] * heightMultiplier;
             }
         }
 
